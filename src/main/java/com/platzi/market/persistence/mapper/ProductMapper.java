@@ -12,13 +12,13 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {CategoryMapper.class})
 public interface ProductMapper {
     @Mappings({
-            @Mapping(target = "idProducto", source = "productId"),
-            @Mapping(target = "nombre", source = "name"),
-            @Mapping(target = "idCategoria", source = "categoryId"),
-            @Mapping(target = "precioVenta", source = "price"),
-            @Mapping(target = "cantidadStock", source = "stock"),
-            @Mapping(target = "estado", source = "active"),
-            @Mapping(target = "categoria", source = "category"),
+            @Mapping(source = "idProducto", target = "productId"),
+            @Mapping(source = "nombre", target = "name"),
+            @Mapping(source = "idCategoria", target = "categoryId"),
+            @Mapping(source = "precioVenta", target = "price"),
+            @Mapping(source = "cantidadStock", target = "stock"),
+            @Mapping(source = "estado", target = "active"),
+            @Mapping(source = "categoria", target = "category"),
     })
     Product toProduct(Producto producto);
     List<Product> toProducts(List<Producto> productos);
