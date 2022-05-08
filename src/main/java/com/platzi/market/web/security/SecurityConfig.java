@@ -1,16 +1,25 @@
 package com.platzi.market.web.security;
 
 import com.platzi.market.domain.service.PlatziUserDetailsService;
+import com.platzi.market.web.security.filter.JwtFilterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private PlatziUserDetailsService platziUserDetailsService;
+
+    @Autowired
+    private JwtFilterRequest jwtFilterRequest;
     /**
      * Used by the default implementation of {@link #authenticationManager()} to attempt
      * to obtain an {@link AuthenticationManager}. If overridden, the
@@ -57,5 +66,53 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(platziUserDetailsService);
+    }
+
+    /**
+     * Override this method to configure the {@link HttpSecurity}. Typically subclasses
+     * should not invoke this method by calling super as it may override their
+     * configuration. The default configuration is:
+     *
+     * <pre>
+     * http.authorizeRequests().anyRequest().authenticated().and().formLogin().and().httpBasic();
+     * </pre>
+     * <p>
+     * Any endpoint that requires defense against common vulnerabilities can be specified
+     * here, including public ones. See {@link HttpSecurity#authorizeRequests} and the
+     * `permitAll()` authorization rule for more details on public endpoints.
+     *
+     * @param http the {@link HttpSecurity} to modify
+     * @throws Exception if an error occurs
+     */
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable().authorizeRequests()
+                .antMatchers("/**/authenticate").permitAll()
+                .anyRequest().authenticated().and().sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        http.addFilterBefore(jwtFilterRequest, UsernamePasswordAuthenticationFilter.class);
+    }
+
+    /**
+     * Override this method to expose the {@link AuthenticationManager} from
+     * {@link #configure(AuthenticationManagerBuilder)} to be exposed as a Bean. For
+     * example:
+     *
+     * <pre>
+     * &#064;Bean(name name="myAuthenticationManager")
+     * &#064;Override
+     * public AuthenticationManager authenticationManagerBean() throws Exception {
+     *     return super.authenticationManagerBean();
+     * }
+     * </pre>
+     *
+     * @return the {@link AuthenticationManager}
+     * @throws Exception
+     */
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 }
